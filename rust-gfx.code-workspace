@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"editor.accessibilitySupport": "off",
+		"editor.autoClosingBrackets": "never",
+		"editor.autoClosingOvertype": "never",
+		"workbench.colorTheme": "Visual Studio Dark",
+		"editor.minimap.enabled": false,
+		"editor.minimap.renderCharacters": false,
+		"workbench.editor.highlightModifiedTabs": true,
+		"workbench.settings.enableNaturalLanguageSearch": false,
+		"workbench.settings.useSplitJSON": true,
+		"zenMode.hideActivityBar": false,
+		"zenMode.hideLineNumbers": false,
+		"zenMode.hideStatusBar": false,
+		"zenMode.hideTabs": false
+	}
+}

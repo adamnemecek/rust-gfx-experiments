@@ -139,6 +139,7 @@ impl WinitPlatform {
     /// * keys are configured
     /// * platform name is set
     pub fn init(imgui: &mut Context) -> WinitPlatform {
+        eprintln!("initializing");
         let io = imgui.io_mut();
         io.backend_flags.insert(BackendFlags::HAS_MOUSE_CURSORS);
         io.backend_flags.insert(BackendFlags::HAS_SET_MOUSE_POS);
@@ -168,6 +169,7 @@ impl WinitPlatform {
             "imgui-winit-support {}",
             env!("CARGO_PKG_VERSION")
         ))));
+        eprintln!("init finished");
         WinitPlatform {
             hidpi_mode: ActiveHiDpiMode::Default,
             hidpi_factor: 1.0,
@@ -180,6 +182,7 @@ impl WinitPlatform {
     /// * framebuffer scale (= DPI factor) is set
     /// * display size is set
     pub fn attach_window(&mut self, io: &mut Io, window: &Window, hidpi_mode: HiDpiMode) {
+        eprintln!("attaching window");
         let (hidpi_mode, hidpi_factor) = hidpi_mode.apply(window.scale_factor());
         self.hidpi_mode = hidpi_mode;
         self.hidpi_factor = hidpi_factor;
@@ -203,10 +206,11 @@ impl WinitPlatform {
         window: &Window,
         physical_size: PhysicalSize<u32>
     ) -> LogicalSize<f32> {
+        eprintln!("scale size from winit");
         match self.hidpi_mode {
             ActiveHiDpiMode::Default => physical_size.to_logical(window.scale_factor()),
             _ => physical_size
-                .to_logical(window.scale_factor() / self.hidpi_factor),
+                .to_logical(window.scale_factor()),
         }
     }
     /// Scales a logical position coming from winit using the current DPI mode.
@@ -218,10 +222,11 @@ impl WinitPlatform {
         window: &Window,
         physical_pos: PhysicalPosition<i32>,
     ) -> LogicalPosition<f64> {
+        eprintln!("scale pos from winit");
         match self.hidpi_mode {
             ActiveHiDpiMode::Default => physical_pos.to_logical(window.scale_factor()),
             _ => physical_pos
-                .to_logical(window.scale_factor() / self.hidpi_factor),
+                .to_logical(window.scale_factor()),
         }
     }
     /// Scales a logical position for winit using the current DPI mode.
@@ -233,11 +238,13 @@ impl WinitPlatform {
         window: &Window,
         logical_pos: LogicalPosition<f64>,
     ) -> PhysicalPosition<i32> {
+        eprintln!("scale pos for winit");
         match self.hidpi_mode {
-            ActiveHiDpiMode::Default => logical_pos.to_physical(window.scale_factor()),
-            _ => logical_pos
+            //ActiveHiDpiMode::Default
+            _ => logical_pos.to_physical(window.scale_factor()),
+            // _ => logical_pos
                 // .to_physical(self.hidpi_factor)
-                .to_physical(window.scale_factor() / self.hidpi_factor),
+                // .to_physical(self.hidpi_factor),
         }
     }
     /// Handles a winit event.
@@ -248,6 +255,7 @@ impl WinitPlatform {
     /// * keyboard state is updated
     /// * mouse state is updated
     pub fn handle_event<T>(&mut self, io: &mut Io, window: &Window, event: &Event<T>) {
+        eprintln!("event!");
         match *event {
             Event::WindowEvent {
                 window_id,
@@ -266,6 +274,7 @@ impl WinitPlatform {
                     }),
                 ..
             } => {
+                eprintln!("device event!");
                 io.keys_down[key as usize] = false;
                 match key {
                     VirtualKeyCode::LShift | VirtualKeyCode::RShift => io.key_shift = false,
@@ -279,12 +288,15 @@ impl WinitPlatform {
         }
     }
     fn handle_window_event(&mut self, io: &mut Io, window: &Window, event: &WindowEvent) {
+        eprintln!("window event!");
         match *event {
             WindowEvent::Resized(physical_size) => {
+                eprintln!(" resize event!");
                 let logical_size = self.scale_size_from_winit(window, physical_size);
                 io.display_size = [logical_size.width as f32, logical_size.height as f32];
             }
             WindowEvent::ScaleFactorChanged{scale_factor: scale, new_inner_size: _ } => {
+                eprintln!("rescale event!");
                 let hidpi_factor = match self.hidpi_mode {
                     ActiveHiDpiMode::Default => scale,
                     ActiveHiDpiMode::Rounded => scale.round(),
@@ -314,6 +326,7 @@ impl WinitPlatform {
                     },
                 ..
            } => {
+                eprintln!("event!");
                 let pressed = state == ElementState::Pressed;
                 io.keys_down[key as usize] = pressed;
                 match key {
@@ -325,6 +338,8 @@ impl WinitPlatform {
                 }
             }
             WindowEvent::ReceivedCharacter(ch) => {
+
+                eprintln!("char event!");
                 // Exclude the backspace key ('\u{7f}'). Otherwise we will insert this char and then
                 // delete it.
                 if ch != '\u{7f}' {
@@ -332,6 +347,9 @@ impl WinitPlatform {
                 }
             }
             WindowEvent::CursorMoved { position, .. } => {
+
+                eprintln!("cursor event!");
+
                 let position = self.scale_pos_from_winit(window, position);
                 io.mouse_pos = [position.x as f32, position.y as f32];
             }
@@ -339,7 +357,9 @@ impl WinitPlatform {
                 delta,
                 phase: TouchPhase::Moved,
                 ..
-            } => match delta {
+            } => {
+                eprintln!("mousewheel event!");
+                match delta {
                 MouseScrollDelta::LineDelta(h, v) => {
                     io.mouse_wheel_h = h;
                     io.mouse_wheel = v;
@@ -356,8 +376,10 @@ impl WinitPlatform {
                         _ => (),
                     }
                 }
+                }
             },
             WindowEvent::MouseInput { state, button, .. } => {
+                eprintln!("mouse event!");
                 let pressed = state == ElementState::Pressed;
                 match button {
                     MouseButton::Left => io.mouse_down[0] = pressed,
