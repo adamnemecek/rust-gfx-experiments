@@ -30,7 +30,7 @@ fn main() {
         let window = Window::new(&event_loop).unwrap();
         window.set_inner_size(LogicalSize { width: 1280.0, height: 720.0 });
         window.set_title(&format!("imgui-wgpu {}", version));
-        let hidpi_factor = window.scale_factor();
+        let hidpi_factor = window.scale_factor(); 
         let size = window
             .inner_size();
             // .to_physical(hidpi_factor);
@@ -66,7 +66,7 @@ fn main() {
     // Set up dear imgui
     let mut imgui = imgui::Context::create();
     let mut platform = imgui_winit_support::WinitPlatform::init(&mut imgui);
-    platform.attach_window(imgui.io_mut(), &window, imgui_winit_support::HiDpiMode::Default);
+    platform.attach_window(imgui.io_mut(), &window);
     imgui.set_ini_filename(None);
 
     let font_size = (13.0 * hidpi_factor) as f32;
