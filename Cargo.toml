@@ -1,0 +1,33 @@
+[package]
+name = "rust-gfx"
+version = "0.1.0"
+authors = ["Rohit Ramesh <rkr@berkeley.edu>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# glium = "0.23.0"
+rand = "0.6.5"
+wgpu = "0.4"
+glsl-to-spirv = "0.1"
+log = "0.4"
+imgui = "0.2.1"
+imgui-wgpu = "0.4.1"
+
+winit = "0.20.0"
+raw-window-handle = "0.3"
+env_logger = "0.5"
+image = "0.22"
+
+
+[dependencies.imgui-winit-support]
+version = "0.3.0-pre"
+path = "lib/imgui-winit-support/"
+default-features = false
+features = ["winit-20"]
+
+#imgui = { git = "https://github.com/Gekkio/imgui-rs" }
+# imgui-glium-renderer = { git = "https://github.com/Gekkio/imgui-rs" }
+# imgui-wgpu-rs = { git = "https://github.com/unconed/imgui-wgpu-rs" }
+# wgpu-rs = {git = "https://github.com/gfx-rs/wgpu" }:w
