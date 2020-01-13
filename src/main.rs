@@ -11,83 +11,48 @@ use winit::{
         EventLoop,
         ControlFlow,
     },
-    dpi::LogicalSize,
-    window::Window,
+    // dpi::LogicalSize,
+    // window::Window,
 };
 use imgui::*;
 use imgui_wgpu::Renderer;
-use imgui_winit_support;
+// use imgui_winit_support;
 use std::time::Instant;
+
+mod wrapper;
+
 
 fn main() {
     env_logger::init();
 
     // Set up window and GPU
     let event_loop = EventLoop::new();
-    let (window, mut size, surface, hidpi_factor) = {
-        let version = env!("CARGO_PKG_VERSION");
+    let (window, mut size, surface, hidpi_factor) 
+      = wrapper::window::init_window(&event_loop); 
+   
+    let adapter = wrapper::gpu::get_adapter();
 
-        let window = Window::new(&event_loop).unwrap();
-        window.set_inner_size(LogicalSize { width: 1280.0, height: 720.0 });
-        window.set_title(&format!("imgui-wgpu {}", version));
-        let hidpi_factor = window.scale_factor(); 
-        let size = window
-            .inner_size();
-            // .to_physical(hidpi_factor);
-
-        let surface = wgpu::Surface::create(&window);
-
-        (window, size, surface, hidpi_factor)
-    };
-
-    let adapter = wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
-        power_preference: wgpu::PowerPreference::LowPower,
-        backends: wgpu::BackendBit::PRIMARY,
-    }).unwrap();
-
-    let (mut device, mut queue) = adapter.request_device(&wgpu::DeviceDescriptor {
-        extensions: wgpu::Extensions {
-            anisotropic_filtering: false,
-        },
-        limits: wgpu::Limits::default(),
-    });
-
+    let (mut device, mut queue) 
+      = wrapper::gpu::get_device_queue(adapter);
     // Set up swap chain
-    let mut sc_desc = wgpu::SwapChainDescriptor {
-        usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-        format: wgpu::TextureFormat::Bgra8Unorm,
-        width: size.width as u32,
-        height: size.height as u32,
-        present_mode: wgpu::PresentMode::NoVsync,
-    };
-
+    let mut sc_desc = wrapper::gpu::setup_swap_chain(size);
     let mut swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
     // Set up dear imgui
-    let mut imgui = imgui::Context::create();
-    let mut platform = imgui_winit_support::WinitPlatform::init(&mut imgui);
-    platform.attach_window(imgui.io_mut(), &window);
-    imgui.set_ini_filename(None);
-
-    let font_size = (13.0 * hidpi_factor) as f32;
-    imgui.io_mut().font_global_scale = (1.0 / hidpi_factor) as f32;
-
-    imgui.fonts().add_font(&[
-        FontSource::DefaultFontData {
-            config: Some(imgui::FontConfig {
-                oversample_h: 1,
-                pixel_snap_h: true,
-                size_pixels: font_size,
-                ..Default::default()
-            })
-        }
-    ]);
-
-    //
+    let mut imgui = wrapper::gui::create_context();
+    let (mut platform, font_size) = 
+        wrapper::gui::init_platform(&mut imgui, &window, hidpi_factor);
     // Set up dear imgui wgpu renderer
     //
-    let clear_color = wgpu::Color { r: 0.1, g: 0.2, b: 0.3, a: 1.0 };
-    let mut renderer = Renderer::new(&mut imgui, &device, &mut queue, sc_desc.format, Some(clear_color));
+    let clear_color = wgpu::Color { r: 0.2, g: 0.2, b: 0.3, a: 1.0 };
+    let mut renderer = 
+        Renderer::new(
+            &mut imgui,
+            &device, 
+            &mut queue, 
+            sc_desc.format, 
+            Some(clear_color),
+        );
 
     let mut last_frame = Instant::now();
     let mut demo_open = true;
