@@ -20,6 +20,7 @@ raw-window-handle = "0.3"
 env_logger = "0.5"
 image = "0.22"
 
+zerocopy = "0.2"
 
 [dependencies.imgui-winit-support]
 version = "0.3.0-pre"
