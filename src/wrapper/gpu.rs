@@ -2,6 +2,7 @@
 use winit;
 use wgpu;
 
+/// Requests a low power GPU adapter from wgpu
 pub fn get_adapter() -> wgpu::Adapter {
     wgpu::Adapter::request(&wgpu::RequestAdapterOptions {
         power_preference: wgpu::PowerPreference::LowPower,

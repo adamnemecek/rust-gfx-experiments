@@ -11,8 +11,7 @@ use winit::{
         EventLoop,
         ControlFlow,
     },
-    // dpi::LogicalSize,
-    // window::Window,
+    window::{WindowBuilder},
 };
 use imgui::*;
 use imgui_wgpu::Renderer;
@@ -21,16 +20,80 @@ use std::time::Instant;
 
 mod wrapper;
 
+extern crate pretty_env_logger;
+use log::{
+    LevelFilter::{
+        Trace,
+    },
+    trace, 
+    debug,
+    info,
+    warn,
+    error, 
+};
 
 fn main() {
-    env_logger::init();
+
+// Initialize the logging system, for now we set the log-level to 
+// Trace, instead of tying it to the environment. 
+pretty_env_logger::formatted_timed_builder()
+  .filter_level(Trace)
+  .init();
+
+trace!("Creating winit event loop.");
+let event_loop = EventLoop::new();
+
+trace!("Creating initial window.");
+
+let window = WindowBuilder::new()
+.build(&event_loop)
+.unwrap();
+// let (window, mut size, surface, hidpi_factor) 
+ //   = wrapper::window::init_window(&event_loop); 
+
+//trace!("Creating gpu adapter."); 
+// An adapter is basically a reference to the GPU we intend to use
+//let adapter = wrapper::gpu::get_adapter();
+
+
+
+trace!("Entering Event Loop");
+event_loop.run(move |event, _, control_flow| {
+match event {
+    Event::WindowEvent {
+        ref event,
+        window_id,
+    } if window_id == window.id() => match event {
+        WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+        WindowEvent::KeyboardInput {
+            input,
+            ..
+        } => {
+            match input {
+                KeyboardInput {
+                    state: ElementState::Pressed,
+                    virtual_keycode: Some(VirtualKeyCode::Escape),
+                    ..
+                } => { 
+                    trace!("Quitting"); 
+                    *control_flow = ControlFlow::Exit
+                },
+                _ => *control_flow = ControlFlow::Wait,
+            }
+        }
+        _ => *control_flow = ControlFlow::Wait,
+    }
+    _ => *control_flow = ControlFlow::Wait,
+}
+});
+}
+
+/*
+fn main() {
+    pretty_env_logger::init();
 
     // Set up window and GPU
-    let event_loop = EventLoop::new();
-    let (window, mut size, surface, hidpi_factor) 
-      = wrapper::window::init_window(&event_loop); 
    
-    let adapter = wrapper::gpu::get_adapter();
 
     let (mut device, mut queue) 
       = wrapper::gpu::get_device_queue(adapter);
@@ -153,3 +216,4 @@ fn main() {
         platform.handle_event(imgui.io_mut(), &window, &event);
     });
 }
+*/
