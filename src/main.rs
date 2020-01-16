@@ -20,10 +20,13 @@ use std::time::Instant;
 
 mod wrapper;
 
+use wrapper::*;
+
 extern crate pretty_env_logger;
 use log::{
     LevelFilter::{
         Trace,
+        Warn,
     },
     trace, 
     debug,
@@ -38,6 +41,8 @@ fn main() {
 // Trace, instead of tying it to the environment. 
 pretty_env_logger::formatted_timed_builder()
   .filter_level(Trace)
+  .filter_module("wgpu_native", Warn)
+  .filter_module("gfx_backend_vulkan", Warn)
   .init();
 
 trace!("Creating winit event loop.");
@@ -48,6 +53,10 @@ trace!("Creating initial window.");
 let window = WindowBuilder::new()
 .build(&event_loop)
 .unwrap();
+
+trace!("constructing GPU state"); 
+let mut gpu_state = gpu::State::new(&window);
+
 // let (window, mut size, surface, hidpi_factor) 
  //   = wrapper::window::init_window(&event_loop); 
 
@@ -65,6 +74,9 @@ match event {
         window_id,
     } if window_id == window.id() => match event {
         WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+        WindowEvent::Resized(physical_size) => {
+                gpu_state.resize(physical_size);
+            },
         WindowEvent::KeyboardInput {
             input,
             ..
@@ -82,6 +94,11 @@ match event {
             }
         }
         _ => *control_flow = ControlFlow::Wait,
+    }
+    Event::MainEventsCleared => {
+        gpu_state.update();
+        gpu_state.render(); 
+        *control_flow = ControlFlow::Wait
     }
     _ => *control_flow = ControlFlow::Wait,
 }

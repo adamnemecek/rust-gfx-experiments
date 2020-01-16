@@ -356,7 +356,7 @@ fn render(
 
     encoder.finish()
 }
-}
+
 
 
 #[cfg_attr(rustfmt, rustfmt_skip)]
